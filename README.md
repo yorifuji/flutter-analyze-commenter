@@ -2,6 +2,8 @@
 
 GitHub Action that automatically comments on pull requests with the results from Flutter Analyze.
 
+<img width="800" src="https://github.com/yorifuji/flutter-analyze-commenter/assets/583917/2f40f92d-4731-4eb6-98d4-85c8d00998f8">
+
 ## USAGE
 
 ```yaml
