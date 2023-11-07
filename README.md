@@ -9,6 +9,7 @@ jobs:
   flutter-analyze:
     runs-on: ubuntu-latest
     permissions:
+      contents: read
       pull-requests: write # required to add comment on PR
     steps:
       # checkout your repository and install flutter
