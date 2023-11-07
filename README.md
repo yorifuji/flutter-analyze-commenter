@@ -4,7 +4,7 @@ Automatically comment Flutter Analyze results in pull requests.
 
 <img width="800" src="https://github.com/yorifuji/flutter-analyze-commenter/assets/583917/2f40f92d-4731-4eb6-98d4-85c8d00998f8">
 
-## USAGE
+## Usage
 
 ```yaml
 jobs:
