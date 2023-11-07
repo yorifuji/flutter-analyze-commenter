@@ -1,0 +1,23 @@
+name: "Flutter Analyze Commenter"
+description: "Auto comment on PRs based on Flutter Analyze results"
+author: "yorifuji"
+inputs:
+  analyze_log:
+    description: "Path to the Flutter analyze log file"
+    required: true
+  verbose:
+    description: "Enable verbose logging"
+    required: false
+    default: "false"
+runs:
+  using: "composite"
+  steps:
+    - name: Comment on PR based on Flutter Analyze results
+      uses: actions/github-script@v6
+      env:
+        ANALYZE_LOG: ${{ inputs.analyze_log }}
+        VERBOSE: ${{ inputs.verbose }}
+      with:
+        script: |
+          const script = require("${{github.action_path}}/index.js")
+          script({ core, github, context })
