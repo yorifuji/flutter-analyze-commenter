@@ -33,7 +33,7 @@ jobs:
         if: ${{ !cancelled() }}            # run this step even if flutter analyze fails
         with:
           analyze_log: flutter_analyze.log # file path of flutter analyze log
-          verbose: true 　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　# optional: default is false
+          verbose: true                    # optional: default is false
 ```
 
 ## How it works
