@@ -51,7 +51,7 @@ By utilizing `actions/github-script`, this action remains within the GitHub Acti
 
 Currently, there are no reported issues. If you encounter any problems, please open an issue in the repository.
 
-# DEVELOPMENT
+# Development
 
 TBD
 
@@ -59,10 +59,10 @@ TBD
 
 TBD
 
-## DEBUG
+## Debug
 
 TBD
 
-# LICENSE
+# License
 
 MIT
