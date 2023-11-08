@@ -5,9 +5,9 @@
 
 Automatically comment Flutter Analyze results in pull requests.
 
-## Features
-
 <img width="800" src="https://github.com/yorifuji/flutter-analyze-commenter/assets/583917/2f40f92d-4731-4eb6-98d4-85c8d00998f8">
+
+## Features
 
 - **Automated PR Reviews**
   - Automatically scans the Flutter analyze log file and adds line-specific comments to pull requests, simulating a manual code review process.
