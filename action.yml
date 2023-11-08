@@ -1,6 +1,9 @@
 name: "Flutter Analyze Commenter"
 description: "Auto comment on PRs based on Flutter Analyze results"
 author: "yorifuji"
+branding:
+  icon: "code"
+  color: "blue"
 inputs:
   analyze_log:
     description: "Path to the Flutter analyze log file"
