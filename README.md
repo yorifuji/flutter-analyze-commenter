@@ -9,10 +9,14 @@ Automatically comment Flutter Analyze results in pull requests.
 
 <img width="800" src="https://github.com/yorifuji/flutter-analyze-commenter/assets/583917/2f40f92d-4731-4eb6-98d4-85c8d00998f8">
 
-- **Automated PR Reviews**: Automatically scans the Flutter analyze log file and adds line-specific comments to pull requests, simulating a manual code review process.
-- **Easy to Use**: Just set the path to your Flutter analyze log file, and the action handles the rest.
-- **Direct Integration with GitHub Actions**: Designed as a native GitHub Action, it directly utilizes the GitHub ecosystem, providing a seamless integration with your CI/CD pipeline without the need for third-party tools.
-- **Small Footprint**: Designed to be minimalistic, only doing what is necessary to comment on the PR based on Flutter analyze results.
+- **Automated PR Reviews**
+  - Automatically scans the Flutter analyze log file and adds line-specific comments to pull requests, simulating a manual code review process.
+- **Easy to Use**
+  - Just set the path to your Flutter analyze log file, and the action handles the rest.
+- **Direct Integration with GitHub Actions**
+  - Designed as a native GitHub Action, it directly utilizes the GitHub ecosystem, providing a seamless integration with your CI/CD pipeline without the need for third-party tools.
+- **Small Footprint**
+  - Designed to be minimalistic, only doing what is necessary to comment on the PR based on Flutter analyze results.
 
 ## Usage
 
