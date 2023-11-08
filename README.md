@@ -64,18 +64,18 @@ This is where flutter-analyze-commenter comes in: a minimalistic, easy-to-use so
 
 Currently, there are no reported issues. If you encounter any problems, please open an issue in the repository.
 
-# Development
+## Development
 
 TBD
 
-## Setup
+### Setup
 
 TBD
 
-## Debug
+### Debug
 
 TBD
 
-# License
+## License
 
 MIT
