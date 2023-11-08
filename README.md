@@ -3,7 +3,7 @@
 
 # Flutter Analyze Commenter
 
-Automatically comment Flutter Analyze results in pull requests.
+Comment Flutter Analyze results in pull requests.
 
 <img width="579" alt="image" src="https://github.com/yorifuji/flutter-analyze-commenter/assets/583917/8bcaf4da-82e3-4e79-8f4a-6baa4d35192a">
 
