@@ -54,6 +54,12 @@ The `flutter-analyze-commenter` GitHub Action leverages `actions/github-script` 
 
 By utilizing `actions/github-script`, this action remains within the GitHub Actions environment, making it secure and efficient without the need for additional permissions or setup.
 
+## Motivation
+
+Running flutter analyze within GitHub Actions is a commendable CI practice that significantly improves code quality. However, trawling through Action execution logs to find flutter analyze results can be quite inconvenient. While utilizing a combination of [Danger](https://github.com/marketplace/actions/danger-action) and [danger-flutter_lint](https://github.com/mateuszszklarek/danger-flutter_lint) can facilitate displaying these results as PR comments — and these tools are indeed powerful — they also introduce a considerable overhead due to their multifunctionality and numerous dependencies. There was a clear need for a more streamlined tool, one that's solely focused on presenting flutter analyze results within pull requests, without the extra baggage.
+
+This is where flutter-analyze-commenter comes in: a minimalistic, easy-to-use solution that seamlessly integrates with your CI/CD workflow.
+
 ## Known issues
 
 Currently, there are no reported issues. If you encounter any problems, please open an issue in the repository.
