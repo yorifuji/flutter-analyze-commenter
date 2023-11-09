@@ -16,9 +16,33 @@ module.exports = async function ({ core, github, context }) {
     if (verboseLogging) {
       console.error(error.stack);
     }
+    core.setFailed(error.message);
   }
 
-  class Comment {
+  class Issue {
+    constructor(level, message, file, line, column) {
+      this.level = level;
+      this.message = message;
+      this.file = file;
+      this.line = line;
+      this.column = column;
+    }
+  }
+
+  class LocalComment {
+    constructor(issue) {
+      const levelIcon = {
+        'info': 'ℹ️',
+        'warning': '⚠️',
+        'error': '❌'
+      };
+      this.path = issue.file;
+      this.position = issue.line; // Ensure this is the correct position for the GitHub comment
+      this.body = `<table><tr><td>${levelIcon[issue.level]}</td><td>${issue.message}</td></tr></table><!-- Flutter Analyze Commenter -->`;
+    }
+  }
+
+  class RemoteComment {
     constructor(id, path, position, body) {
       this.id = id;
       this.path = path;
@@ -26,31 +50,25 @@ module.exports = async function ({ core, github, context }) {
       this.body = body;
     }
 
-    static fromAnalyzerResult(result) {
-      const level = result.level == 'info' ? 'ℹ️' : result.level == 'warning' ? '⚠️' : '❌';
-      const body = `<table><tr><td>${level}</td><td>${result.message}</td></tr></table><!-- Flutter Analyze Commenter -->`;
-      return new Comment(null, result.file, result.line, body);
-    }
-
-    matchesExistingComment(existingComment) {
-      return this.path === existingComment.path &&
-        this.position === existingComment.position &&
-        this.body === existingComment.body;
+    matchesLocalComment(localComment) {
+      return this.path === localComment.path &&
+        this.position === localComment.position &&
+        this.body === localComment.body;
     }
   }
 
-  function parseAnalyzerOutput(output) {
+  function parseToIssues(analyzeLog) {
     const regex = /\[(info|warning|error)\] (.+) \((.+):(\d+):(\d+)\)/g;
     const issues = [];
     let match;
-    while (match = regex.exec(output)) {
-      issues.push({
-        level: match[1],
-        message: match[2],
-        file: match[3],
-        line: parseInt(match[4]),
-        column: parseInt(match[5])
-      });
+    while ((match = regex.exec(analyzeLog))) {
+      issues.push(new Issue(
+        match[1],
+        match[2],
+        convertFullPathToDiffPath(match[3], workingDir),
+        parseInt(match[4], 10),
+        parseInt(match[5], 10)
+      ));
     }
     return issues;
   }
@@ -59,9 +77,9 @@ module.exports = async function ({ core, github, context }) {
     return fullPath.replace(workingDir, '').replace(/^\//, '');
   }
 
-  function generateReviewComments(diff, analyzerResults) {
+  function generateLocalComments(diff, issues) {
     const diffLines = diff.split('\n');
-    const comments = [];
+    const localComments = [];
 
     let currentFile = '';
     let oldLineCounter = 0; // ファイルの「元」の行番号を追跡
@@ -88,9 +106,9 @@ module.exports = async function ({ core, github, context }) {
 
       if (line.startsWith('+')) {
         newLineCounter++;
-        const matchedResults = analyzerResults.filter(result => result.file === currentFile && result.line === newLineCounter);
+        const matchedResults = issues.filter(issue => issue.file === currentFile && issue.line === newLineCounter);
         for (const result of matchedResults) {
-          comments.push(Comment.fromAnalyzerResult(result));
+          localComments.push(new LocalComment(result));
         }
       } else if (line.startsWith('-')) {
         oldLineCounter++;
@@ -100,28 +118,24 @@ module.exports = async function ({ core, github, context }) {
       }
     }
 
-    return comments;
+    return localComments;
   }
 
 
   async function run() {
-    let analyzerResults;
+    let issues;
     try {
       const analyzerOutput = fs.readFileSync(analyzeLog, 'utf-8');
-      analyzerResults = parseAnalyzerOutput(analyzerOutput).map(result => {
-        result.file = convertFullPathToDiffPath(result.file);
-        return result;
-      });
-      logVerbose(`Parsed analyzer results: ${JSON.stringify(analyzerResults, null, 2)}`);
+      issues = parseToIssues(analyzerOutput);
+      logVerbose(`Parsed issues: ${JSON.stringify(issues, null, 2)}`);
     } catch (error) {
-      logError(error);
-      core.setFailed(`Failed to read or parse analyze log: ${error.message}`);
+      logError(`Failed to read analyze log: ${error.message}`);
       return;
     }
 
-    let comments;
+    let localComments;
     try {
-      const response = await github.rest.pulls.get({
+      const diff = await github.rest.pulls.get({
         owner: context.repo.owner,
         repo: context.repo.repo,
         pull_number: context.issue.number,
@@ -130,59 +144,69 @@ module.exports = async function ({ core, github, context }) {
         }
       });
       logVerbose('Received diff from GitHub.');
-      comments = generateReviewComments(response.data, analyzerResults);
-      logVerbose(`Generated review comments: ${JSON.stringify(comments, null, 2)}`);
+      localComments = generateLocalComments(diff.data, issues);
+      logVerbose(`Generated local comments: ${JSON.stringify(localComments, null, 2)}`);
     } catch (error) {
-      logError(error);
-      core.setFailed(`Failed to generate review comments: ${error.message}`);
+      logError(`Failed to create local comments: ${error.message}`);
       return;
     }
 
-    let existingComments;
+    let remoteComments;
     try {
-      logVerbose('Retrieving existing review comments.');
+      logVerbose('Retrieving remote comments.');
       const listReviewComments = await github.rest.pulls.listReviewComments({
         owner: context.repo.owner,
         repo: context.repo.repo,
         pull_number: context.issue.number
       });
-      existingComments = listReviewComments.data.map(data => {
-        return new Comment(data.id, data.path, data.original_position || data.position, data.body);
-      });
-      logVerbose(`Existed review comments: ${JSON.stringify(existingComments, null, 2)}`);
+      remoteComments = listReviewComments.data.map(comment =>
+        new RemoteComment(comment.id, comment.path, comment.original_position || comment.position, comment.body)
+      );
+      logVerbose(`Existed remote comments: ${JSON.stringify(remoteComments, null, 2)}`);
     } catch (error) {
-      logError(error);
-      core.setFailed(`Failed to retrive review comments: ${error.message}`);
+      logError(`Failed to parse remote comments: ${error.message}`);
       return;
     }
 
-    const newComments = comments.filter(comment => !existingComments.some(existing => comment.matchesExistingComment(existing)));
-    const missingComments = existingComments.filter(existing => !comments.some(comment => comment.matchesExistingComment(existing)));
+    // Logic to determine which comments to create, update, or delete
+    const commentsToAdd = localComments.filter(local =>
+      !remoteComments.some(remote => remote.matchesLocalComment(local))
+    );
+    const commentsToDelete = remoteComments.filter(remote =>
+      !localComments.some(local => remote.matchesLocalComment(local))
+    );
 
-    // new
-    for (const comment of newComments) {
-      await github.rest.pulls.createReviewComment({
-        owner: context.repo.owner,
-        repo: context.repo.repo,
-        pull_number: context.issue.number,
-        commit_id: context.payload.pull_request.head.sha,
-        path: comment.path,
-        position: comment.position,
-        body: comment.body
-      });
+    // Add new comments to the PR
+    for (const comment of commentsToAdd) {
+      try {
+        await github.rest.pulls.createReviewComment({
+          owner: context.repo.owner,
+          repo: context.repo.repo,
+          pull_number: context.issue.number,
+          commit_id: context.payload.pull_request.head.sha,
+          path: comment.path,
+          position: comment.position,
+          body: comment.body
+        });
+      } catch (error) {
+        logError(`Failed to add comment: ${error.message}`);
+      }
     }
 
-    // missing
-    for (const comment of missingComments) {
-      await github.rest.pulls.deleteReviewComment({
-        owner: context.repo.owner,
-        repo: context.repo.repo,
-        comment_id: comment.id
-      });
+    // Delete missing comments from the PR
+    for (const comment of commentsToDelete) {
+      try {
+        await github.rest.pulls.deleteReviewComment({
+          owner: context.repo.owner,
+          repo: context.repo.repo,
+          comment_id: comment.id
+        });
+      } catch (error) {
+        logError(`Failed to delete comment: ${error.message}`);
+      }
     }
 
-    logVerbose('Review comments processing completed.');
+    logVerbose('Processing completed.');
   }
-
   run();
 }
