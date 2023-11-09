@@ -1,6 +1,6 @@
 const fs = require('fs');
 
-module.exports = async function ({ core, github, context, analyzeLog, verboseLogging, workingDir, maxIssues, perPage }) {
+module.exports = async function ({ core, github, context, workingDir, analyzeLog, verboseLogging, maxIssues, perPage }) {
   function logVerbose(message) {
     if (verboseLogging) {
       console.log(message);
@@ -128,6 +128,7 @@ module.exports = async function ({ core, github, context, analyzeLog, verboseLog
       return;
     }
 
+    const maxIssuesComment = '<!-- Flutter Analyze Commenter: maxIssues -->';
     // delete summary comment
     try {
       const listComments = await github.rest.issues.listComments({
@@ -136,7 +137,7 @@ module.exports = async function ({ core, github, context, analyzeLog, verboseLog
         issue_number: context.issue.number,
         per_page: perPage
       });
-      const summaryComment = listComments.data.find(comment => comment.body.includes('<!-- Flutter Analyze Commenter: maxIssues -->'));
+      const summaryComment = listComments.data.find(comment => comment.body.includes(maxIssuesComment));
       if (summaryComment) {
         await github.rest.issues.deleteComment({
           owner: context.repo.owner,
@@ -151,7 +152,7 @@ module.exports = async function ({ core, github, context, analyzeLog, verboseLog
 
     if (issues.length > maxIssues) {
       // Create a summary comment
-      const summary = `Flutter analyze commenter found ${issues.length} issues, which exceeds the maximum of ${maxIssues}.\n<!-- Flutter Analyze Commenter: maxIssues -->`;
+      const summary = `Flutter analyze commenter found ${issues.length} issues, which exceeds the maximum of ${maxIssues}.\n${maxIssuesComment}`;
       try {
         await github.rest.issues.createComment({
           owner: context.repo.owner,
