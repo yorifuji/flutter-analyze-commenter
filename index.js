@@ -1,12 +1,6 @@
 const fs = require('fs');
 
-module.exports = async function ({ core, github, context }) {
-  const analyzeLog = process.env.ANALYZE_LOG;
-  const verboseLogging = process.env.VERBOSE === 'true';
-  const workingDir = process.env.GITHUB_WORKSPACE; // /home/runner/...
-  const maxIssues = parseInt(process.env.MAX_ISSUES, 10) || 10;
-  const perPage = parseInt(process.env.PER_PAGE, 10) || 100;
-
+module.exports = async function ({ core, github, context, analyzeLog, verboseLogging, workingDir, maxIssues, perPage }) {
   function logVerbose(message) {
     if (verboseLogging) {
       console.log(message);
