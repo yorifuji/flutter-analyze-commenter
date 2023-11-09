@@ -4,6 +4,8 @@ module.exports = async function ({ core, github, context }) {
   const analyzeLog = process.env.ANALYZE_LOG;
   const verboseLogging = process.env.VERBOSE === 'true';
   const workingDir = process.env.GITHUB_WORKSPACE; // /home/runner/...
+  const maxIssues = parseInt(process.env.MAX_ISSUES, 10) || 10;
+  const perPage = parseInt(process.env.PER_PAGE, 10) || 100;
 
   function logVerbose(message) {
     if (verboseLogging) {
@@ -133,6 +135,45 @@ module.exports = async function ({ core, github, context }) {
       return;
     }
 
+    // delete summary comment
+    try {
+      const listComments = await github.rest.issues.listComments({
+        owner: context.repo.owner,
+        repo: context.repo.repo,
+        issue_number: context.issue.number,
+        per_page: perPage
+      });
+      const summaryComment = listComments.data.find(comment => comment.body.includes('<!-- Flutter Analyze Commenter: maxIssues -->'));
+      if (summaryComment) {
+        await github.rest.issues.deleteComment({
+          owner: context.repo.owner,
+          repo: context.repo.repo,
+          comment_id: summaryComment.id
+        });
+      }
+    } catch (error) {
+      logError(`Failed to delete summary comment: ${error.message}`);
+      return;
+    }
+
+    if (issues.length > maxIssues) {
+      // Create a summary comment
+      const summary = `Flutter analyze found ${issues.length} issues, which exceeds the maximum of ${maxIssues}.\n<!-- Flutter Analyze Commenter: maxIssues -->`;
+      try {
+        await github.rest.issues.createComment({
+          owner: context.repo.owner,
+          repo: context.repo.repo,
+          issue_number: context.issue.number,
+          body: summary
+        });
+        logError(`Number of issues exceeds maximum: ${issues.length} > ${maxIssues}`);
+        return;
+      }
+      catch (error) {
+        logError(`Failed to create summary comment: ${error.message}`);
+      }
+    }
+
     let localComments;
     try {
       const diff = await github.rest.pulls.get({
@@ -157,7 +198,8 @@ module.exports = async function ({ core, github, context }) {
       const listReviewComments = await github.rest.pulls.listReviewComments({
         owner: context.repo.owner,
         repo: context.repo.repo,
-        pull_number: context.issue.number
+        pull_number: context.issue.number,
+        per_page: perPage
       });
       remoteComments = listReviewComments.data.map(comment =>
         new RemoteComment(comment.id, comment.path, comment.original_position || comment.position, comment.body)
