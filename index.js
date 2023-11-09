@@ -14,11 +14,10 @@ module.exports = async function ({ core, github, context }) {
   }
 
   function logError(error) {
-    console.error('Error:', error);
     if (verboseLogging) {
-      console.error(error.stack);
+      console.error('Error:', error);
     }
-    core.setFailed(error.message);
+    core.setFailed(error);
   }
 
   class Issue {
@@ -158,7 +157,7 @@ module.exports = async function ({ core, github, context }) {
 
     if (issues.length > maxIssues) {
       // Create a summary comment
-      const summary = `Flutter analyze found ${issues.length} issues, which exceeds the maximum of ${maxIssues}.\n<!-- Flutter Analyze Commenter: maxIssues -->`;
+      const summary = `Flutter analyze commenter found ${issues.length} issues, which exceeds the maximum of ${maxIssues}.\n<!-- Flutter Analyze Commenter: maxIssues -->`;
       try {
         await github.rest.issues.createComment({
           owner: context.repo.owner,
