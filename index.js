@@ -1,10 +1,6 @@
 const fs = require('fs');
 
-module.exports = async function ({ core, github, context }) {
-  const analyzeLog = process.env.ANALYZE_LOG;
-  const verboseLogging = process.env.VERBOSE === 'true';
-  const workingDir = process.env.GITHUB_WORKSPACE; // /home/runner/...
-
+module.exports = async function ({ core, github, context, workingDir, analyzeLog, verboseLogging, maxIssues, perPage }) {
   function logVerbose(message) {
     if (verboseLogging) {
       console.log(message);
@@ -12,11 +8,10 @@ module.exports = async function ({ core, github, context }) {
   }
 
   function logError(error) {
-    console.error('Error:', error);
     if (verboseLogging) {
-      console.error(error.stack);
+      console.error('Error:', error);
     }
-    core.setFailed(error.message);
+    core.setFailed(error);
   }
 
   class Issue {
@@ -133,6 +128,46 @@ module.exports = async function ({ core, github, context }) {
       return;
     }
 
+    const maxIssuesComment = '<!-- Flutter Analyze Commenter: maxIssues -->';
+    // delete summary comment
+    try {
+      const listComments = await github.rest.issues.listComments({
+        owner: context.repo.owner,
+        repo: context.repo.repo,
+        issue_number: context.issue.number,
+        per_page: perPage
+      });
+      const summaryComment = listComments.data.find(comment => comment.body.includes(maxIssuesComment));
+      if (summaryComment) {
+        await github.rest.issues.deleteComment({
+          owner: context.repo.owner,
+          repo: context.repo.repo,
+          comment_id: summaryComment.id
+        });
+      }
+    } catch (error) {
+      logError(`Failed to delete summary comment: ${error.message}`);
+      return;
+    }
+
+    if (issues.length > maxIssues) {
+      // Create a summary comment
+      const summary = `Flutter analyze commenter found ${issues.length} issues, which exceeds the maximum of ${maxIssues}.\n${maxIssuesComment}`;
+      try {
+        await github.rest.issues.createComment({
+          owner: context.repo.owner,
+          repo: context.repo.repo,
+          issue_number: context.issue.number,
+          body: summary
+        });
+        logError(`Number of issues exceeds maximum: ${issues.length} > ${maxIssues}`);
+        return;
+      }
+      catch (error) {
+        logError(`Failed to create summary comment: ${error.message}`);
+      }
+    }
+
     let localComments;
     try {
       const diff = await github.rest.pulls.get({
@@ -157,7 +192,8 @@ module.exports = async function ({ core, github, context }) {
       const listReviewComments = await github.rest.pulls.listReviewComments({
         owner: context.repo.owner,
         repo: context.repo.repo,
-        pull_number: context.issue.number
+        pull_number: context.issue.number,
+        per_page: perPage
       });
       remoteComments = listReviewComments.data.map(comment =>
         new RemoteComment(comment.id, comment.path, comment.original_position || comment.position, comment.body)
