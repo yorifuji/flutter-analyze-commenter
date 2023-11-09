@@ -20,6 +20,7 @@ runs:
       env:
         ANALYZE_LOG: ${{ inputs.analyze_log }}
         VERBOSE: ${{ inputs.verbose }}
+      if: ${{ github.event_name == 'pull_request' }}
       with:
         script: |
           const analyzeLog = process.env.ANALYZE_LOG;
