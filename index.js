@@ -92,28 +92,28 @@ module.exports = async function ({
       if (line.startsWith('---') || line.startsWith('+++')) {
         if (line.startsWith('+++')) {
           currentFile = line.replace('+++ b/', '');
+          processCurrentFile = issues.some(issue => issue.file === currentFile);
         }
-        lineCounter = 0; // 新しいファイルセクションで行番号をリセット
-        continue;
-      }
-
-      // diffハンクのヘッダーを処理
-      const hunkHeaderMatch = line.match(/^@@ -\d+,?\d* \+(\d+),?\d* @@/);
-      if (hunkHeaderMatch) {
-        lineCounter = parseInt(hunkHeaderMatch[1], 10) - 1;
-        continue;
-      }
-
-      if (line.startsWith('+')) {
-        // 変更された行に対して処理
-        lineCounter++;
-        const matchedResults = issues.filter(issue => issue.file === currentFile && issue.line === lineCounter);
-        for (const result of matchedResults) {
-          localComments.push(new LocalComment(result));
+        lineCounter = 0;
+      } else if (processCurrentFile) {
+        // diffハンクのヘッダーを処理
+        const hunkHeaderMatch = line.match(/^@@ -\d+,?\d* \+(\d+),?\d* @@/);
+        if (hunkHeaderMatch) {
+          lineCounter = parseInt(hunkHeaderMatch[1], 10) - 1;
+          continue;
         }
-      } else if (!line.startsWith('-')) {
-        // その他の行（変更されていない行やハンクヘッダー）にも行番号をカウントアップ
-        lineCounter++;
+
+        if (line.startsWith('+')) {
+          // 変更された行に対して処理
+          lineCounter++;
+          const matchedResults = issues.filter(issue => issue.file === currentFile && issue.line === lineCounter);
+          for (const result of matchedResults) {
+            localComments.push(new LocalComment(result));
+          }
+        } else if (!line.startsWith('-')) {
+          // その他の行（変更されていない行やハンクヘッダー）にも行番号をカウントアップ
+          lineCounter++;
+        }
       }
     }
 
