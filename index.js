@@ -1,6 +1,15 @@
 const fs = require('fs');
 
-module.exports = async function ({ core, github, context, workingDir, analyzeLog, verboseLogging, maxIssues, perPage }) {
+module.exports = async function ({
+  core,
+  github,
+  context,
+  workingDir,
+  analyzeLog,
+  verboseLogging,
+  maxIssues,
+  perPage
+}) {
   function logVerbose(message) {
     if (verboseLogging) {
       console.log(message);
@@ -32,22 +41,22 @@ module.exports = async function ({ core, github, context, workingDir, analyzeLog
         'error': '❌'
       };
       this.path = issue.file;
-      this.position = issue.line; // Ensure this is the correct position for the GitHub comment
+      this.line = issue.line; // Ensure this is the correct line for the GitHub comment
       this.body = `<table><tr><td>${levelIcon[issue.level]}</td><td>${issue.message}</td></tr></table><!-- Flutter Analyze Commenter -->`;
     }
   }
 
   class RemoteComment {
-    constructor(id, path, position, body) {
+    constructor(id, path, line, body) {
       this.id = id;
       this.path = path;
-      this.position = position;
+      this.line = line;
       this.body = body;
     }
 
     matchesLocalComment(localComment) {
       return this.path === localComment.path &&
-        this.position === localComment.position &&
+        this.line === localComment.line &&
         this.body === localComment.body;
     }
   }
@@ -77,45 +86,39 @@ module.exports = async function ({ core, github, context, workingDir, analyzeLog
     const localComments = [];
 
     let currentFile = '';
-    let oldLineCounter = 0; // ファイルの「元」の行番号を追跡
-    let newLineCounter = 0; // ファイルの「新しい」行番号を追跡
+    let lineCounter = 0; // 全体の行番号を追跡
 
     for (const line of diffLines) {
       if (line.startsWith('---') || line.startsWith('+++')) {
-        // 新しいファイルセクションが始まるたびにカウンターをリセット
         if (line.startsWith('+++')) {
           currentFile = line.replace('+++ b/', '');
         }
-        oldLineCounter = 0;
-        newLineCounter = 0;
+        lineCounter = 0; // 新しいファイルセクションで行番号をリセット
         continue;
       }
 
-      // diffハンクのヘッダーを処理 (e.g., @@ -1,5 +1,6 @@)
-      const hunkHeaderMatch = line.match(/^@@ -(\d+),?\d* \+(\d+),?\d* @@/);
+      // diffハンクのヘッダーを処理
+      const hunkHeaderMatch = line.match(/^@@ -\d+,?\d* \+(\d+),?\d* @@/);
       if (hunkHeaderMatch) {
-        oldLineCounter = parseInt(hunkHeaderMatch[1], 10) - 1;
-        newLineCounter = parseInt(hunkHeaderMatch[2], 10) - 1;
+        lineCounter = parseInt(hunkHeaderMatch[1], 10) - 1;
         continue;
       }
 
       if (line.startsWith('+')) {
-        newLineCounter++;
-        const matchedResults = issues.filter(issue => issue.file === currentFile && issue.line === newLineCounter);
+        // 変更された行に対して処理
+        lineCounter++;
+        const matchedResults = issues.filter(issue => issue.file === currentFile && issue.line === lineCounter);
         for (const result of matchedResults) {
           localComments.push(new LocalComment(result));
         }
-      } else if (line.startsWith('-')) {
-        oldLineCounter++;
-      } else {
-        oldLineCounter++;
-        newLineCounter++;
+      } else if (!line.startsWith('-')) {
+        // その他の行（変更されていない行やハンクヘッダー）にも行番号をカウントアップ
+        lineCounter++;
       }
     }
 
     return localComments;
   }
-
 
   async function run() {
     let issues;
@@ -195,8 +198,9 @@ module.exports = async function ({ core, github, context, workingDir, analyzeLog
         pull_number: context.issue.number,
         per_page: perPage
       });
+      // logVerbose(`listReviewComments result: ${JSON.stringify(listReviewComments.data, null, 2)}`);
       remoteComments = listReviewComments.data.map(comment =>
-        new RemoteComment(comment.id, comment.path, comment.original_position || comment.position, comment.body)
+        new RemoteComment(comment.id, comment.path, comment.original_line || comment.line, comment.body)
       );
       logVerbose(`Existed remote comments: ${JSON.stringify(remoteComments, null, 2)}`);
     } catch (error) {
@@ -221,7 +225,8 @@ module.exports = async function ({ core, github, context, workingDir, analyzeLog
           pull_number: context.issue.number,
           commit_id: context.payload.pull_request.head.sha,
           path: comment.path,
-          position: comment.position,
+          side: "RIGHT",
+          line: comment.line,
           body: comment.body
         });
       } catch (error) {
