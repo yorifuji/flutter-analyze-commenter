@@ -87,6 +87,7 @@ module.exports = async function ({
 
     let currentFile = '';
     let lineCounter = 0; // 全体の行番号を追跡
+    let processCurrentFile = false;
 
     for (const line of diffLines) {
       if (line.startsWith('---') || line.startsWith('+++')) {
