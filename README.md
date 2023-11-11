@@ -20,7 +20,13 @@ Comment Flutter Analyze results in pull requests.
 
 ## Usage
 
+Example workflow
+
 ```yaml
+name: fluttera-analyze-commenter example 
+
+on: pull_request  # fluttera-analyze-commenter only supports run by pull request
+
 jobs:
   flutter-analyze:
     runs-on: ubuntu-latest
@@ -28,7 +34,8 @@ jobs:
       contents: read
       pull-requests: write # required to add comment on PR
     steps:
-      # checkout your repository and install flutter
+      # checkout repository and setup flutter environment
+      ...
 
       # run flutter analyze with --write option
       - name: Run flutter analyze
