@@ -56,14 +56,15 @@ If you wrote code like the following,
 
 ```diff
 diff --git a/lib/main.dart b/lib/main.dart
-index dda5554..aa5b62e 100644
+index dda5554..0456e5b 100644
 --- a/lib/main.dart
 +++ b/lib/main.dart
-@@ -1,6 +1,7 @@
+@@ -1,6 +1,8 @@
  import 'package:flutter/material.dart';
  
  void main() {
 +  final String y1 = 1;
++
    runApp(const MyApp());
  }
 ```
