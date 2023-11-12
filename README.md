@@ -97,9 +97,9 @@ By utilizing `actions/github-script`, this action remains within the GitHub Acti
 
 ## Motivation
 
-Running flutter analyze within GitHub Actions is a commendable CI practice that significantly improves code quality. However, trawling through Action execution logs to find flutter analyze results can be quite inconvenient.
+Running flutter analyze within GitHub Actions is a commendable CI practice that significantly improves code quality.
 
-While utilizing a combination of [Danger](https://github.com/marketplace/actions/danger-action) and [danger-flutter_lint](https://github.com/mateuszszklarek/danger-flutter_lint) can facilitate displaying these results as PR comments — and these tools are indeed powerful — they also introduce a considerable overhead due to their multifunctionality and numerous dependencies.
+However, trawling through Action execution logs to find flutter analyze results can be quite inconvenient. While utilizing a combination of [Danger](https://github.com/marketplace/actions/danger-action) and [danger-flutter_lint](https://github.com/mateuszszklarek/danger-flutter_lint) can facilitate displaying these results as PR comments — and these tools are indeed powerful — they also introduce a considerable overhead due to their multifunctionality and numerous dependencies.
 
 There was a clear need for a more streamlined tool, one that's solely focused on presenting flutter analyze results within pull requests, without the extra baggage.
 
