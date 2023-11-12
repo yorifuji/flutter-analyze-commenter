@@ -3,7 +3,7 @@
 
 # Flutter Analyze Commenter
 
-Flutter Analyze Commenter is a GitHub Action that posts Flutter Analyze results as comments on pull requests.
+Flutter Analyze Commenter is a GitHub Action that posts `flutter analyze` results as comments on pull requests.
 
 <img width="579" alt="image" src="https://github.com/yorifuji/flutter-analyze-commenter/assets/583917/8bcaf4da-82e3-4e79-8f4a-6baa4d35192a">
 
