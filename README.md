@@ -3,7 +3,7 @@
 
 # Flutter Analyze Commenter
 
-Comment Flutter Analyze results in pull requests.
+Flutter Analyze Commenter is a GitHub Action that posts `flutter analyze` results as comments on pull requests.
 
 <img width="579" alt="image" src="https://github.com/yorifuji/flutter-analyze-commenter/assets/583917/8bcaf4da-82e3-4e79-8f4a-6baa4d35192a">
 
@@ -52,24 +52,28 @@ jobs:
 
 ## How it works
 
-When developing with Flutter, suppose you have the following code snippet:
+If you wrote code like the following,
 
-```dart
-void main() {
-  final String y1 = 1;
-  runApp(const MyApp());
-}
-
-class MyApp extends StatelessWidget {
-  const MyApp({super.key});
-...
+```diff
+diff --git a/lib/main.dart b/lib/main.dart
+index dda5554..0456e5b 100644
+--- a/lib/main.dart
++++ b/lib/main.dart
+@@ -1,6 +1,8 @@
+ import 'package:flutter/material.dart';
+ 
+ void main() {
++  final String y1 = 1;
++
+   runApp(const MyApp());
+ }
 ```
 
-This may lead to issues being flagged in the VSCode Problems pane, similar to the following:
+issues will be displayed in the VSCode Problems pane.
 
 ![image](https://github.com/yorifuji/flutter-analyze-commenter/assets/583917/8cdb1f14-5e55-4182-86e9-a3d906499de8)
 
-These would typically be identified by the `flutter analyze` command in the following manner:
+These are based on the output from the flutter analyze command.
 
 ```shell
 % flutter analyze
@@ -93,7 +97,11 @@ By utilizing `actions/github-script`, this action remains within the GitHub Acti
 
 ## Motivation
 
-Running flutter analyze within GitHub Actions is a commendable CI practice that significantly improves code quality. However, trawling through Action execution logs to find flutter analyze results can be quite inconvenient. While utilizing a combination of [Danger](https://github.com/marketplace/actions/danger-action) and [danger-flutter_lint](https://github.com/mateuszszklarek/danger-flutter_lint) can facilitate displaying these results as PR comments — and these tools are indeed powerful — they also introduce a considerable overhead due to their multifunctionality and numerous dependencies. There was a clear need for a more streamlined tool, one that's solely focused on presenting flutter analyze results within pull requests, without the extra baggage.
+Running flutter analyze within GitHub Actions is a commendable CI practice that significantly improves code quality.
+
+However, trawling through Action execution logs to find flutter analyze results can be quite inconvenient. While utilizing a combination of [Danger](https://github.com/marketplace/actions/danger-action) and [danger-flutter_lint](https://github.com/mateuszszklarek/danger-flutter_lint) can facilitate displaying these results as PR comments — and these tools are indeed powerful — they also introduce a considerable overhead due to their multifunctionality and numerous dependencies.
+
+There was a clear need for a more streamlined tool, one that's solely focused on presenting flutter analyze results within pull requests, without the extra baggage.
 
 This is where flutter-analyze-commenter comes in: a minimalistic, easy-to-use solution that seamlessly integrates with your CI/CD workflow.
 
