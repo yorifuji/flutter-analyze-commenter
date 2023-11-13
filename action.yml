@@ -31,4 +31,4 @@ runs:
           const workingDir = process.env.GITHUB_WORKSPACE; // /home/runner/...
 
           const script = require("${{github.action_path}}/index.js")
-          script({ core, github, context, workingDir, analyzeLog, verboseLogging, maxIssues, perPage })
+          await script({ core, github, context, workingDir, analyzeLog, verboseLogging, maxIssues, perPage })
