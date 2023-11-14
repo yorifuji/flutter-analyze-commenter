@@ -34,7 +34,7 @@ module.exports = async function ({
   }
 
   const maxIssuesComment = '<!-- Flutter Analyze Commenter: maxIssues -->';
-  // delete maxIssues comment
+  // delete exist maxIssues comment
   try {
     const response = await github.rest.issues.listComments({
       owner: context.repo.owner,
@@ -42,12 +42,12 @@ module.exports = async function ({
       issue_number: context.issue.number,
       per_page: perPage
     });
-    const summaryComment = response.data.find(comment => comment.body.includes(maxIssuesComment));
-    if (summaryComment) {
+    const maxIssuesComment = response.data.find(comment => comment.body.includes(maxIssuesComment));
+    if (maxIssuesComment) {
       await github.rest.issues.deleteComment({
         owner: context.repo.owner,
         repo: context.repo.repo,
-        comment_id: summaryComment.id
+        comment_id: maxIssuesComment.id
       });
     }
   } catch (error) {
@@ -55,9 +55,8 @@ module.exports = async function ({
     return;
   }
 
-  // Check if number of issues exceeds maximum
   if (issues.length > maxIssues) {
-    // Create maxIssues comment
+    // Create maxIssues comment, and exit
     const body = `Flutter analyze commenter found ${issues.length} issues, which exceeds the maximum of ${maxIssues}.\n${maxIssuesComment}`;
     try {
       await github.rest.issues.createComment({
@@ -85,11 +84,10 @@ module.exports = async function ({
         format: "diff",
       }
     });
-    logVerbose('Received diff from GitHub.');
+    // logVerbose('Received diff from GitHub.');
     // logVerbose(response.data);
-
     diff = new Diff(response.data);
-    logVerbose(`Diff object: ${JSON.stringify(diff, null, 2)}`);
+    logVerbose(`Diff: ${JSON.stringify(diff, null, 2)}`);
   } catch (error) {
     logError(`Failed to retrieve diff: ${error.message}`);
     return;
@@ -103,11 +101,12 @@ module.exports = async function ({
     logVerbose(`Issues in Diff: ${JSON.stringify(issuesInDiff, null, 2)}`);
     logVerbose(`Issues not in Diff: ${JSON.stringify(issuesNotInDiff, null, 2)}`);
 
-    inlineComments = issuesInDiff.map(issue => new Comment(issue));
-    logVerbose(`Generated inline comments: ${JSON.stringify(inlineComments, null, 2)}`);
+    const groupedIssues = groupIssuesByLine(issuesInDiff);
+    inlineComments = groupedIssues.map(group => new Comment(group));
+    logVerbose(`Inline comments: ${JSON.stringify(inlineComments, null, 2)}`);
 
     outlineComment = issuesNotInDiff.length > 0 ? generateTableForIssuesNotInDiff(issuesNotInDiff) : null;
-    // logVerbose(`Generated outline comment: ${outlineComment}`);
+    logVerbose(`Outline comment: ${outlineComment}`);
   } catch (error) {
     logError(`Failed to create inline comments: ${error.message}`);
     return;
@@ -282,15 +281,20 @@ class Issue {
 }
 
 class Comment {
-  constructor(issue) {
+  constructor(issues) {
     const levelIcon = {
       'info': 'ℹ️',
       'warning': '⚠️',
       'error': '❌'
     };
-    this.path = issue.file;
-    this.line = issue.line; // Ensure this is the correct line for the GitHub comment
-    this.body = `<table><tr><td>${levelIcon[issue.level]}</td><td>${issue.message}</td></tr></table><!-- Flutter Analyze Commenter: issue -->`;
+    this.path = issues[0].file;
+    this.line = issues[0].line;
+
+    this.body = '<table><thead><tr><th>Level</th><th>Message</th></tr></thead><tbody>';
+    this.body += issues.map(issue => {
+      return `<tr><td>${levelIcon[issue.level]}</td><td>${issue.message}</td></tr>`;
+    }).join('');
+    this.body += '</tbody></table><!-- Flutter Analyze Commenter: issue -->';
   }
 }
 
@@ -366,4 +370,16 @@ function generateTableForIssuesNotInDiff(issuesNotInDiff) {
     `</tbody>` +
     `</table >` +
     `<!-- Flutter Analyze Commenter: outline issues -->`;
+}
+
+function groupIssuesByLine(issues) {
+  const grouped = {};
+  issues.forEach(issue => {
+    const key = `${issue.file}:${issue.line}`;
+    if (!grouped[key]) {
+      grouped[key] = [];
+    }
+    grouped[key].push(issue);
+  });
+  return Object.values(grouped);
 }
