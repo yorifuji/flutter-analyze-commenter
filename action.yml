@@ -16,7 +16,7 @@ runs:
   using: "composite"
   steps:
     - name: Comment on PR based on Flutter Analyze results
-      uses: actions/github-script@v6
+      uses: actions/github-script@v7
       env:
         ANALYZE_LOG: ${{ inputs.analyze_log }}
         VERBOSE: ${{ inputs.verbose }}
