@@ -65,7 +65,7 @@ module.exports = async function ({
         issue_number: context.issue.number,
         body: body
       });
-      logError(`Number of issues exceeds maximum: ${issues.length} > ${maxIssues}`);
+      logVerbose(`Number of issues exceeds maximum: ${issues.length} > ${maxIssues}`);
       return;
     }
     catch (error) {
