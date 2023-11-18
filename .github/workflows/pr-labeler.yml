@@ -1,0 +1,19 @@
+name: PR Labeler
+
+run-name: PR Labeler
+
+on:
+  pull_request:
+    types: opened
+
+jobs:
+  pr-labeler:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      pull-requests: write
+    timeout-minutes: 30
+    steps:
+      - uses: TimonVS/pr-labeler-action@8b99f404a073744885d8021d1de4e40c6eaf38e2
+        with:
+          repo-token: ${{ secrets.GITHUB_TOKEN }}

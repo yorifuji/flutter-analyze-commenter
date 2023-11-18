@@ -70,6 +70,7 @@ module.exports = async function ({
     }
     catch (error) {
       logError(`Failed to create maxIssues comment: ${error.message}`);
+      return;
     }
   }
 
