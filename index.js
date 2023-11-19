@@ -43,7 +43,7 @@ module.exports = async function ({
       per_page: perPage
     });
     const maxIssuesComment = response.data.find(comment => comment.body.includes(maxIssuesComment));
-    if (maxIssuesComment) {
+    if (maxIssuesComment !== undefined) {
       await github.rest.issues.deleteComment({
         owner: context.repo.owner,
         repo: context.repo.repo,
@@ -124,7 +124,7 @@ module.exports = async function ({
     // logVerbose(`listComments results: ${JSON.stringify(response.data, null, 2)}`);
     const existOutlineComment = response.data.find(comment => comment.body.includes('<!-- Flutter Analyze Commenter: outline issues -->'));
     // logVerbose(`existOutlineComment: ${JSON.stringify(existOutlineComment, null, 2)}`);
-    if (existOutlineComment) {
+    if (existOutlineComment !== undefined) {
       await github.rest.issues.deleteComment({
         owner: context.repo.owner,
         repo: context.repo.repo,
