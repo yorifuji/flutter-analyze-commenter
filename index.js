@@ -33,7 +33,7 @@ module.exports = async function ({
     return;
   }
 
-  const maxIssuesComment = '<!-- Flutter Analyze Commenter: maxIssues -->';
+  const maxIssuesCommentHeader = '<!-- Flutter Analyze Commenter: maxIssues -->';
   // delete exist maxIssues comment
   try {
     const response = await github.rest.issues.listComments({
@@ -42,7 +42,7 @@ module.exports = async function ({
       issue_number: context.issue.number,
       per_page: perPage
     });
-    const maxIssuesComment = response.data.find(comment => comment.body.includes(maxIssuesComment));
+    const maxIssuesComment = response.data.find(comment => comment.body.includes(maxIssuesCommentHeader));
     if (maxIssuesComment !== undefined) {
       await github.rest.issues.deleteComment({
         owner: context.repo.owner,
@@ -57,7 +57,7 @@ module.exports = async function ({
 
   if (issues.length > maxIssues) {
     // Create maxIssues comment, and exit
-    const body = `Flutter analyze commenter found ${issues.length} issues, which exceeds the maximum of ${maxIssues}.\n${maxIssuesComment}`;
+    const body = `Flutter analyze commenter found ${issues.length} issues, which exceeds the maximum of ${maxIssues}.\n${maxIssuesCommentHeader}`;
     try {
       await github.rest.issues.createComment({
         owner: context.repo.owner,
