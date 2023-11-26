@@ -363,7 +363,7 @@ function generateTableForIssuesNotInDiff(issuesNotInDiff) {
     `</tr>`
   ).join('');
 
-  return `<p>Flutter Analyze Commenter has detected the following issues:</p>` +
+  return `<p>Flutter Analyze Commenter has detected the following issues, including those within your commits, and additional potential issues due to recent updates to the base branch:</p>` +
     `<table>` +
     `<thead><tr><th>Level</th><th>File</th><th>Line</th><th>Message</th></tr></thead>` +
     `<tbody>` +

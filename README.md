@@ -6,8 +6,18 @@ Flutter Analyze Commenter is a GitHub Action that posts `flutter analyze` result
 
 <picture>
   <source media="(prefers-color-scheme: dark)" srcset="https://github.com/yorifuji/flutter-analyze-commenter/assets/583917/87de4252-38e1-46bd-9eb0-b0740bbc3ec3">
-  <source media="(prefers-color-scheme: light)" srcset="https://github.com/yorifuji/flutter-analyze-commenter/assets/583917/6abf8aab-d5c6-4f2b-b121-6a671429e69b">
-  <img width="598" src="https://github.com/yorifuji/flutter-analyze-commenter/assets/583917/6abf8aab-d5c6-4f2b-b121-6a671429e69b">
+  <source media="(prefers-color-scheme: light)" srcset="https://github.com/yorifuji/flutter-analyze-commenter/assets/583917/4cfe47ac-b9c9-4ed6-885a-3c4c5584aa7d">
+  <img width="598" src="https://github.com/yorifuji/flutter-analyze-commenter/assets/583917/4cfe47ac-b9c9-4ed6-885a-3c4c5584aa7d">
+</picture>
+
+---
+
+Potential issues not included in your pull request, or changes in differences due to updates to the base branch, will be displayed as a summary in the following way:
+
+<picture>
+  <source media="(prefers-color-scheme: dark)" srcset="https://github.com/yorifuji/flutter-analyze-commenter/assets/583917/e5e2488d-2357-49dd-8eec-87ba05c3ac57">
+  <source media="(prefers-color-scheme: light)" srcset="https://github.com/yorifuji/flutter-analyze-commenter/assets/583917/4ad5956d-9c38-41dd-b72f-238ff957e261">
+  <img width="700" src="https://github.com/yorifuji/flutter-analyze-commenter/assets/583917/4ad5956d-9c38-41dd-b72f-238ff957e261">
 </picture>
 
 ## Features
