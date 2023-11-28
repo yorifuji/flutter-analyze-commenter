@@ -28,7 +28,9 @@ runs:
           const maxIssues = parseInt(process.env.MAX_ISSUES, 10) || 10;
           const perPage = parseInt(process.env.PER_PAGE, 10) || 100;
 
-          const workingDir = process.env.GITHUB_WORKSPACE; // /home/runner/...
+          const workingDir = process.env.GITHUB_WORKSPACE;
+          const actionPath = process.env.GITHUB_ACTION_PATH;
 
-          const script = require("${{github.action_path}}/index.js")
+          const path = require('path');
+          const script = require(path.join(actionPath, 'index.js'));
           await script({ core, github, context, workingDir, analyzeLog, verboseLogging, maxIssues, perPage })
