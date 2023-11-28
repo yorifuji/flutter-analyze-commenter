@@ -327,7 +327,7 @@ function parseAnalyzerOutputs(analyzeLog, workingDir) {
     issues.push(new Issue(
       match[1],
       match[2],
-      match[3].replace(workingDir, '').replace(/^\//, ''),
+      match[3].replace(workingDir, '').replace(/^(\\|\/)/, '').replace(/\\/, '/'),
       parseInt(match[4], 10),
       parseInt(match[5], 10)
     ));
