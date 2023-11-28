@@ -23,9 +23,12 @@ module.exports = async function ({
     core.setFailed(error);
   }
 
+  logVerbose(`Working directory: ${workingDir}`);
+
   let issues;
   try {
     const analyzerOutput = fs.readFileSync(analyzeLog, 'utf-8');
+    logVerbose(`Analyzer output: ${analyzerOutput}`);
     issues = parseAnalyzerOutputs(analyzerOutput, workingDir);
     logVerbose(`Parsed issues: ${JSON.stringify(issues, null, 2)}`);
   } catch (error) {
