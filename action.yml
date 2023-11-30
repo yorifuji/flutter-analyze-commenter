@@ -22,6 +22,7 @@ runs:
         VERBOSE: ${{ inputs.verbose }}
       if: ${{ github.event_name == 'pull_request' }}
       with:
+        retries: 3
         script: |
           const analyzeLog = process.env.ANALYZE_LOG;
           const verboseLogging = process.env.VERBOSE === 'true';
