@@ -1,9 +1,13 @@
 name: "Flutter Analyze Commenter"
+
 description: "Auto comment on PRs based on Flutter Analyze results"
+
 author: "yorifuji"
+
 branding:
-  icon: "code"
-  color: "blue"
+  icon: code
+  color: blue
+
 inputs:
   analyze_log:
     description: "Path to the Flutter analyze log file"
@@ -11,16 +15,16 @@ inputs:
   verbose:
     description: "Enable verbose logging"
     required: false
-    default: "false"
+    default: false
+
 runs:
-  using: "composite"
+  using: composite
   steps:
-    - name: Comment on PR based on Flutter Analyze results
-      uses: actions/github-script@v7
+    - uses: actions/github-script@v7
+      if: ${{ github.event_name == 'pull_request' }}
       env:
         ANALYZE_LOG: ${{ inputs.analyze_log }}
         VERBOSE: ${{ inputs.verbose }}
-      if: ${{ github.event_name == 'pull_request' }}
       with:
         retries: 3
         script: |
