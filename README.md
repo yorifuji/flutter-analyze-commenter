@@ -18,17 +18,6 @@ Potential issues not included in your pull request, or changes in differences du
   <img width="700" src="https://github.com/yorifuji/flutter-analyze-commenter/assets/583917/4ad5956d-9c38-41dd-b72f-238ff957e261">
 </picture>
 
-## Features
-
-- **Exploring Static Analysis Outputs**
-  - This action processes Flutter's static analysis output and adds relevant comments to pull requests, highlighting code issues for reviewers.
-- **Easy to Use**
-  - Just set the path to your Flutter analyze log file, and the action handles the rest.
-- **Direct Integration with GitHub Actions**
-  - Designed as a native GitHub Action, it directly utilizes the GitHub ecosystem, providing a seamless integration with your CI/CD pipeline without the need for third-party tools.
-- **Small Footprint**
-  - Designed to be minimalistic, only doing what is necessary to comment on the PR based on Flutter analyze results.
-
 ## Usage
 
 Example workflow
@@ -59,6 +48,17 @@ jobs:
           verbose: false                               # optional
 ```
 
+## Features
+
+- **Exploring Static Analysis Outputs**
+  - This action processes Flutter's static analysis output and adds relevant comments to pull requests, highlighting code issues for reviewers.
+- **Easy to Use**
+  - Just set the path to your Flutter analyze log file, and the action handles the rest.
+- **Direct Integration with GitHub Actions**
+  - Designed as a native GitHub Action, it directly utilizes the GitHub ecosystem, providing a seamless integration with your CI/CD pipeline without the need for third-party tools.
+- **Small Footprint**
+  - Designed to be minimalistic, only doing what is necessary to comment on the PR based on Flutter analyze results.
+
 ## How it works
 
 If you wrote code like the following in VSCode,
@@ -82,11 +82,11 @@ problems will be shown.
 
 ![image](https://github.com/yorifuji/flutter-analyze-commenter/assets/583917/8cdb1f14-5e55-4182-86e9-a3d906499de8)
 
-These are based on the output from the `flutter analyze` command.
+These are based on the output from the `Dart Analyze Server`, but essentially, they are the same as what `flutter analyze` would produce.
 
 ```shell
 % flutter analyze
-Analyzing flutter_application_9...
+Analyzing flutter_application...
 
    info • Use 'const' for final variables initialized to a constant value • lib/main.dart:4:3 • prefer_const_declarations
 warning • The value of the local variable 'y1' isn't used • lib/main.dart:4:16 • unused_local_variable
@@ -115,18 +115,6 @@ This is where Flutter Analyze Commenter comes in: a minimalistic, easy-to-use so
 ## Known issues
 
 Currently, there are no reported issues. If you encounter any problems, please open an issue in the repository.
-
-## Development
-
-TBD
-
-### Setup
-
-TBD
-
-### Debug
-
-TBD
 
 ## License
 
