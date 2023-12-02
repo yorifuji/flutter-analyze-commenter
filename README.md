@@ -1,5 +1,3 @@
-<img width="800" src="https://github.com/yorifuji/flutter-analyze-commenter/assets/583917/588272c1-f2d3-4b8d-be3e-20812caa42f4">
-
 # Flutter Analyze Commenter
 
 Flutter Analyze Commenter is a GitHub Action that posts `flutter analyze` results as comments on pull requests.
