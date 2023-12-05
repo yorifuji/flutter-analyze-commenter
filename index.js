@@ -7,9 +7,11 @@ module.exports = async function ({
   workingDir,
   analyzeLog,
   verboseLogging,
-  maxIssues,
-  perPage
 }) {
+
+  const maxIssues = 10;
+  const perPage = 100;
+
   function logVerbose(message) {
     if (verboseLogging) {
       console.log(message);
