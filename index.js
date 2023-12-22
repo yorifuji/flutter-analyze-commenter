@@ -39,11 +39,16 @@ module.exports = async function ({
     logError(`Failed to read analyze log: ${error.message}`);
     return;
   }
-  // parse custom lint log
-  let customLintIssues = new CustomLintParser(customLintLog).parse();
-  logVerbose(`Parsed custom lint issues: ${JSON.stringify(customLintIssues, null, 2)}`);
 
-  issues = issues.concat(customLintIssues);
+  // parse custom lint log
+  try {
+    let customLintIssues = new CustomLintParser(customLintLog).parse();
+    logVerbose(`Parsed custom lint issues: ${JSON.stringify(customLintIssues, null, 2)}`);
+    issues = issues.concat(customLintIssues);
+  } catch (error) {
+    logError(`Failed to read custom lint log: ${error.message}`);
+    return;
+  }
 
   const maxIssuesCommentHeader = '<!-- Flutter Analyze Commenter: maxIssues -->';
   // delete exist maxIssues comment
@@ -403,29 +408,28 @@ class CustomLintParser {
   }
 
   parse() {
-    try {
-      const customLintLog = fs.readFileSync(this.jsonFile, 'utf-8');
-      logVerbose(`Custom lint output: ${customLintLog}`);
-      const jsonMatch = customLintLog.match(/{.*}/s);
-      const jsonString = jsonMatch ? jsonMatch[0] : JSON.stringify(
-        {
-          "version": 1,
-          "diagnostics": []
-        }
-      );
-      const jsonData = JSON.parse(jsonString);
-      return jsonData.diagnostics.map(diag => {
-        return new Issue(
-          diag.severity.toLowerCase(),
-          diag.problemMessage,
-          diag.location.file,
-          diag.location.range.start.line,
-          diag.location.range.start.column
-        );
-      });
-    } catch (error) {
-      logError(`Failed to parse JSON data: ${error.message}`);
+    if (this.jsonFile === undefined || this.jsonFile === '') {
       return [];
     }
+
+    const customLintLog = fs.readFileSync(this.jsonFile, 'utf-8');
+    logVerbose(`Custom lint output: ${customLintLog}`);
+    const jsonMatch = customLintLog.match(/{.*}/s);
+    const jsonString = jsonMatch ? jsonMatch[0] : JSON.stringify(
+      {
+        "version": 1,
+        "diagnostics": []
+      }
+    );
+    const jsonData = JSON.parse(jsonString);
+    return jsonData.diagnostics.map(diag => {
+      return new Issue(
+        diag.severity.toLowerCase(),
+        diag.problemMessage,
+        diag.location.file,
+        diag.location.range.start.line,
+        diag.location.range.start.column
+      );
+    });
   }
 }
