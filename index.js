@@ -403,8 +403,9 @@ function groupIssuesByLine(issues) {
 }
 
 class CustomLintParser {
-  constructor(jsonFile) {
+  constructor(jsonFile, workingDir) {
     this.jsonFile = jsonFile
+    this.workingDir = workingDir
   }
 
   parse() {
@@ -425,7 +426,7 @@ class CustomLintParser {
       return new Issue(
         diag.severity.toLowerCase(),
         diag.problemMessage,
-        diag.location.file,
+        diag.location.file.replace(this.workingDir, '').replace(/^(\\|\/)/, '').replace(/\\/, '/'),
         diag.location.range.start.line,
         diag.location.range.start.column
       );
