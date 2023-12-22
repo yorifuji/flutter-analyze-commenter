@@ -38,14 +38,19 @@ jobs:
       ...
 
       # run flutter analyze with --write option
-      - run: flutter analyze --write=flutter_analyze.log
+      - run: flutter analyze --write=flutter_analyze.log || true
+
+      # (Optional)run custom lint with --format=json option
+      - if: ${{ !cancelled() }}
+        run: dart run custom_lint --format=json > custom_lint.json
 
       # use flutter-analyze-commenter
       - uses: yorifuji/flutter-analyze-commenter@v1
-        if: ${{ !cancelled() }}                        # required to run this step even if flutter analyze fails
+        if: ${{ !cancelled() }}               # required to run this step even if flutter analyze fails
         with:
-          analyze_log: flutter_analyze.log             # file path for analyze log
-          verbose: false                               # optional
+          analyze-log: flutter_analyze.log    # file path for analyze log
+          custom-lint-log: custom_lint.log    # file path for custom lint log (optional)
+          verbose: false                      # verbose output (optional)
 ```
 
 ## Features
