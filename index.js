@@ -413,7 +413,6 @@ class CustomLintParser {
     }
 
     const customLintLog = fs.readFileSync(this.jsonFile, 'utf-8');
-    logVerbose(`Custom lint output: ${customLintLog}`);
     const jsonMatch = customLintLog.match(/{.*}/s);
     const jsonString = jsonMatch ? jsonMatch[0] : JSON.stringify(
       {
