@@ -10,10 +10,10 @@ branding:
 
 inputs:
   analyze-log:
-    description: "Path to the Flutter analyze log file"
+    description: "Path to the log file by flutter analyze command"
     required: false
-  custom-lint-json:
-    description: "(Optional)Path to the Custom Lint json file"
+  custom-lint-log:
+    description: "(Optional)Path to the log file by dart run custom_lint command"
     required: false
   verbose:
     description: "Enable verbose logging"
@@ -32,13 +32,13 @@ runs:
       env:
         ANALYZE_LOG: ${{ inputs.analyze-log }}
         ANALYZE_LOG_DEPRECATED: ${{ inputs.analyze_log }}
-        CUSTOM_LINT_JSON: ${{ inputs.custom-lint-json }}
+        CUSTOM_LINT_LOG: ${{ inputs.custom-lint-log }}
         VERBOSE: ${{ inputs.verbose }}
       with:
         retries: 3
         script: |
           const analyzeLog = process.env.ANALYZE_LOG || process.env.ANALYZE_LOG_DEPRECATED;
-          const customLintJson = process.env.CUSTOM_LINT_JSON;
+          const customLintLog = process.env.CUSTOM_LINT_LOG;
           const verboseLogging = process.env.VERBOSE === 'true';
 
           const workingDir = process.env.GITHUB_WORKSPACE;
@@ -46,4 +46,4 @@ runs:
 
           const path = require('path');
           const script = require(path.join(actionPath, 'index.js'));
-          await script({ core, github, context, workingDir, analyzeLog, verboseLogging })
+          await script({ core, github, context, workingDir, analyzeLog, customLintLog, verboseLogging })
