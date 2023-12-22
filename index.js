@@ -42,7 +42,7 @@ module.exports = async function ({
 
   // parse custom lint log
   try {
-    let customLintIssues = new CustomLintParser(customLintLog).parse();
+    let customLintIssues = new CustomLintParser(customLintLog, workingDir).parse();
     logVerbose(`Parsed custom lint issues: ${JSON.stringify(customLintIssues, null, 2)}`);
     issues = issues.concat(customLintIssues);
   } catch (error) {
