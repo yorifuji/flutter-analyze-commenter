@@ -6,6 +6,7 @@ module.exports = async function ({
   context,
   workingDir,
   analyzeLog,
+  customLintLog,
   verboseLogging,
 }) {
 
@@ -28,6 +29,7 @@ module.exports = async function ({
   logVerbose(`Working directory: ${workingDir}`);
 
   let issues;
+  // parse flutter analyze log
   try {
     const analyzerOutput = fs.readFileSync(analyzeLog, 'utf-8');
     logVerbose(`Analyzer output: ${analyzerOutput}`);
@@ -35,6 +37,16 @@ module.exports = async function ({
     logVerbose(`Parsed issues: ${JSON.stringify(issues, null, 2)}`);
   } catch (error) {
     logError(`Failed to read analyze log: ${error.message}`);
+    return;
+  }
+
+  // parse custom lint log
+  try {
+    let customLintIssues = new CustomLintParser(customLintLog, workingDir).parse();
+    logVerbose(`Parsed custom lint issues: ${JSON.stringify(customLintIssues, null, 2)}`);
+    issues = issues.concat(customLintIssues);
+  } catch (error) {
+    logError(`Failed to read custom lint log: ${error.message}`);
     return;
   }
 
@@ -388,4 +400,36 @@ function groupIssuesByLine(issues) {
     grouped[key].push(issue);
   });
   return Object.values(grouped);
+}
+
+class CustomLintParser {
+  constructor(jsonFile, workingDir) {
+    this.jsonFile = jsonFile
+    this.workingDir = workingDir
+  }
+
+  parse() {
+    if (this.jsonFile === undefined || this.jsonFile === '') {
+      return [];
+    }
+
+    const customLintLog = fs.readFileSync(this.jsonFile, 'utf-8');
+    const jsonMatch = customLintLog.match(/{.*}/s);
+    const jsonString = jsonMatch ? jsonMatch[0] : JSON.stringify(
+      {
+        "version": 1,
+        "diagnostics": []
+      }
+    );
+    const jsonData = JSON.parse(jsonString);
+    return jsonData.diagnostics.map(diag => {
+      return new Issue(
+        diag.severity.toLowerCase(),
+        diag.problemMessage,
+        diag.location.file.replace(this.workingDir, '').replace(/^(\\|\/)/, '').replace(/\\/, '/'),
+        diag.location.range.start.line,
+        diag.location.range.start.column
+      );
+    });
+  }
 }

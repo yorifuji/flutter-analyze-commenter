@@ -9,13 +9,20 @@ branding:
   color: blue
 
 inputs:
-  analyze_log:
-    description: "Path to the Flutter analyze log file"
-    required: true
+  analyze-log:
+    description: "Path to the log file by flutter analyze command"
+    required: false
+  custom-lint-log:
+    description: "(Optional)Path to the log file by dart run custom_lint command"
+    required: false
   verbose:
     description: "Enable verbose logging"
     required: false
     default: false
+  analyze_log:
+    description: "Path to the Flutter analyze log file"
+    deprecationMessage: "Use `analyze-log` instead"
+    required: false
 
 runs:
   using: composite
@@ -23,12 +30,15 @@ runs:
     - uses: actions/github-script@v7
       if: ${{ github.event_name == 'pull_request' }}
       env:
-        ANALYZE_LOG: ${{ inputs.analyze_log }}
+        ANALYZE_LOG: ${{ inputs.analyze-log }}
+        ANALYZE_LOG_DEPRECATED: ${{ inputs.analyze_log }}
+        CUSTOM_LINT_LOG: ${{ inputs.custom-lint-log }}
         VERBOSE: ${{ inputs.verbose }}
       with:
         retries: 3
         script: |
-          const analyzeLog = process.env.ANALYZE_LOG;
+          const analyzeLog = process.env.ANALYZE_LOG || process.env.ANALYZE_LOG_DEPRECATED;
+          const customLintLog = process.env.CUSTOM_LINT_LOG;
           const verboseLogging = process.env.VERBOSE === 'true';
 
           const workingDir = process.env.GITHUB_WORKSPACE;
@@ -36,4 +46,4 @@ runs:
 
           const path = require('path');
           const script = require(path.join(actionPath, 'index.js'));
-          await script({ core, github, context, workingDir, analyzeLog, verboseLogging })
+          await script({ core, github, context, workingDir, analyzeLog, customLintLog, verboseLogging })

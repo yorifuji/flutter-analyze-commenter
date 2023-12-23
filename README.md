@@ -1,6 +1,6 @@
 # Flutter Analyze Commenter
 
-Flutter Analyze Commenter is a GitHub Action that posts `flutter analyze` results as comments on pull requests.
+Flutter Analyze Commenter is a GitHub Action that posts comments on pull requests with results from both `flutter analyze` and `custom_lint`.
 
 <picture>
   <source media="(prefers-color-scheme: dark)" srcset="https://github.com/yorifuji/flutter-analyze-commenter/assets/583917/87de4252-38e1-46bd-9eb0-b0740bbc3ec3">
@@ -34,30 +34,38 @@ jobs:
       contents: read
       pull-requests: write # required to add comment on PR
     steps:
-      # checkout repository and setup flutter environment
-      ...
+      - uses: actions/checkout@v4
+
+      - uses: subosito/flutter-action@v2
+
+      - run: flutter pub get
 
       # run flutter analyze with --write option
       - run: flutter analyze --write=flutter_analyze.log
 
+      # (Optional)run custom lint with --format=json option
+      - if: ${{ !cancelled() }}
+        run: dart run custom_lint --format=json > custom_lint.json
+
       # use flutter-analyze-commenter
       - uses: yorifuji/flutter-analyze-commenter@v1
-        if: ${{ !cancelled() }}                        # required to run this step even if flutter analyze fails
+        if: ${{ !cancelled() }}               # required to run this step even if flutter analyze fails
         with:
-          analyze_log: flutter_analyze.log             # file path for analyze log
-          verbose: false                               # optional
+          analyze-log: flutter_analyze.log    # file path for analyze log
+          custom-lint-log: custom_lint.log    # file path for custom lint log (optional)
+          verbose: false                      # verbose output (optional)
 ```
 
 ## Features
 
-- **Exploring Static Analysis Outputs**
-  - This action processes Flutter's static analysis output and adds relevant comments to pull requests, highlighting code issues for reviewers.
+- **Support for flutter analyze and custom_lint results**
+  - This action is compatible with both flutter analyze and custom_lint results.
 - **Easy to Use**
   - Just set the path to your Flutter analyze log file, and the action handles the rest.
 - **Direct Integration with GitHub Actions**
-  - Designed as a native GitHub Action, it directly utilizes the GitHub ecosystem, providing a seamless integration with your CI/CD pipeline without the need for third-party tools.
+  - Designed as a native GitHub Action, it directly utilizes the GitHub ecosystem.
 - **Small Footprint**
-  - Designed to be minimalistic, only doing what is necessary to comment on the PR based on Flutter analyze results.
+  - Designed to be minimalistic, only doing what is necessary to comment on the PR based on analysis results.
 
 ## How it works
 
