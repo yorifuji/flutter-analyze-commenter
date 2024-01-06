@@ -25,7 +25,7 @@ Example workflow
 ```yaml
 name: flutter-analyze-commenter example
 
-on: pull_request  # Only supports run by pull request
+on: pull_request # This action is only supported for pull_request event
 
 jobs:
   flutter-analyze:
@@ -48,7 +48,7 @@ jobs:
         run: dart run custom_lint --format=json > custom_lint.log
 
       # Use flutter-analyze-commenter
-      - if: ${{ !cancelled() }}               # Required to run this step even if failure
+      - if: ${{ !cancelled() }}               # Required to run this step even if the analysis fails
         uses: yorifuji/flutter-analyze-commenter@v1
         with:
           analyze-log: flutter_analyze.log    # file path for analyze log
