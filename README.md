@@ -1,6 +1,6 @@
 # Flutter Analyze Commenter
 
-Flutter Analyze Commenter is a GitHub Action that posts comments on pull requests with results from both `flutter analyze` and `custom_lint`.
+Flutter Analyze Commenter is a GitHub Action that posts comments on pull requests with results from both `flutter analyze` and `dart run custom_lint`.
 
 <picture>
   <source media="(prefers-color-scheme: dark)" srcset="https://github.com/yorifuji/flutter-analyze-commenter/assets/583917/87de4252-38e1-46bd-9eb0-b0740bbc3ec3">
@@ -25,14 +25,14 @@ Example workflow
 ```yaml
 name: flutter-analyze-commenter example
 
-on: pull_request  # flutter-analyze-commenter only supports run by pull request
+on: pull_request  # Only supports run by pull request
 
 jobs:
   flutter-analyze:
     runs-on: ubuntu-latest
     permissions:
       contents: read
-      pull-requests: write # required to add comment on PR
+      pull-requests: write # Write permission is required to add comments on a PR
     steps:
       - uses: actions/checkout@v4
 
@@ -40,16 +40,16 @@ jobs:
 
       - run: flutter pub get
 
-      # run flutter analyze with --write option
+      # Run flutter analyze with --write option
       - run: flutter analyze --write=flutter_analyze.log
 
-      # (Optional)run custom lint with --format=json option
+      # (Optional)Run custom lint with --format=json option
       - if: ${{ !cancelled() }}
-        run: dart run custom_lint --format=json > custom_lint.json
+        run: dart run custom_lint --format=json > custom_lint.log
 
-      # use flutter-analyze-commenter
-      - uses: yorifuji/flutter-analyze-commenter@v1
-        if: ${{ !cancelled() }}               # required to run this step even if flutter analyze fails
+      # Use flutter-analyze-commenter
+      - if: ${{ !cancelled() }}               # Required to run this step even if failure
+        uses: yorifuji/flutter-analyze-commenter@v1
         with:
           analyze-log: flutter_analyze.log    # file path for analyze log
           custom-lint-log: custom_lint.log    # file path for custom lint log (optional)
