@@ -1,5 +1,9 @@
 const fs = require('fs');
 
+const issueCommentHeader = '<!-- Flutter Analyze Commenter: issue -->';
+const maxIssuesCommentHeader = '<!-- Flutter Analyze Commenter: maxIssues -->';
+const outlineCommentHeader = '<!-- Flutter Analyze Commenter: outline issues -->';
+
 module.exports = async function ({
   core,
   github,
@@ -50,7 +54,6 @@ module.exports = async function ({
     return;
   }
 
-  const maxIssuesCommentHeader = '<!-- Flutter Analyze Commenter: maxIssues -->';
   // delete exist maxIssues comment
   try {
     const response = await github.rest.issues.listComments({
@@ -114,6 +117,7 @@ module.exports = async function ({
   // Create inline comments and outline comment
   let inlineComments;
   let outlineComment;
+  const blobUrl = context.payload.pull_request.head.repo.html_url + '/blob/' + context.payload.pull_request.head.ref;
   try {
     const { issuesInDiff, issuesNotInDiff } = filterIssuesByDiff(diff, issues);
     logVerbose(`Issues in Diff: ${JSON.stringify(issuesInDiff, null, 2)}`);
@@ -123,7 +127,7 @@ module.exports = async function ({
     inlineComments = groupedIssues.map(group => new Comment(group));
     logVerbose(`Inline comments: ${JSON.stringify(inlineComments, null, 2)}`);
 
-    outlineComment = issuesNotInDiff.length > 0 ? generateTableForIssuesNotInDiff(issuesNotInDiff) : null;
+    outlineComment = issuesNotInDiff.length > 0 ? generateTableForIssuesNotInDiff(issuesNotInDiff, blobUrl) : null;
     logVerbose(`Outline comment: ${outlineComment}`);
   } catch (error) {
     logError(`Failed to create inline comments: ${error.message}`);
@@ -139,7 +143,7 @@ module.exports = async function ({
       per_page: perPage
     });
     // logVerbose(`listComments results: ${JSON.stringify(response.data, null, 2)}`);
-    const existOutlineComment = response.data.find(comment => comment.body.includes('<!-- Flutter Analyze Commenter: outline issues -->'));
+    const existOutlineComment = response.data.find(comment => comment.body.includes(outlineCommentHeader));
     // logVerbose(`existOutlineComment: ${JSON.stringify(existOutlineComment, null, 2)}`);
     if (existOutlineComment !== undefined) {
       await github.rest.issues.deleteComment({
@@ -312,7 +316,7 @@ class Comment {
     this.body += issues.map(issue => {
       return `<tr><td>${levelIcon[issue.level]}</td><td>${issue.message}</td></tr>`;
     }).join('');
-    this.body += '</tbody></table><!-- Flutter Analyze Commenter: issue -->';
+    this.body += '</tbody></table>${issueCommentHeader}';
   }
 }
 
@@ -364,7 +368,7 @@ function filterIssuesByDiff(diff, issues) {
   return { issuesInDiff, issuesNotInDiff };
 }
 
-function generateTableForIssuesNotInDiff(issuesNotInDiff) {
+function generateTableForIssuesNotInDiff(issuesNotInDiff, blobUrl) {
   const levelIcon = {
     'info': 'ℹ️',
     'warning': '⚠️',
@@ -374,20 +378,19 @@ function generateTableForIssuesNotInDiff(issuesNotInDiff) {
   let tableRows = issuesNotInDiff.map(issue =>
     `<tr>` +
     `<td>${levelIcon[issue.level]}</td>` +
-    `<td>${issue.file}</td>` +
-    `<td>${issue.line}</td>` +
+    `<td><a href="${blobUrl}/${issue.file}/#L${issue.line}">${issue.file}/#L${issue.line}</a></td>` +
     `<td>${issue.message}</td>` +
     `</tr>`
   ).join('');
 
   return `<p>Flutter Analyze Commenter has detected the following issues, including those within your commits, and additional potential issues due to recent updates to the base branch:</p>` +
     `<table>` +
-    `<thead><tr><th>Level</th><th>File</th><th>Line</th><th>Message</th></tr></thead>` +
+    `<thead><tr><th>Level</th><th>File</th><th>Message</th></tr></thead>` +
     `<tbody>` +
     tableRows +
     `</tbody>` +
     `</table >` +
-    `<!-- Flutter Analyze Commenter: outline issues -->`;
+    outlineCommentHeader;
 }
 
 function groupIssuesByLine(issues) {
