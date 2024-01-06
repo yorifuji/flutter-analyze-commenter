@@ -117,7 +117,7 @@ module.exports = async function ({
   // Create inline comments and outline comment
   let inlineComments;
   let outlineComment;
-  const blobUrl = context.payload.pull_request.head.repo.html_url + '/blob/' + context.payload.pull_request.head.ref;
+  const blobUrl = context.payload.pull_request.head.repo.html_url + '/blob/' + context.sha;
   try {
     const { issuesInDiff, issuesNotInDiff } = filterIssuesByDiff(diff, issues);
     logVerbose(`Issues in Diff: ${JSON.stringify(issuesInDiff, null, 2)}`);
@@ -378,7 +378,7 @@ function generateTableForIssuesNotInDiff(issuesNotInDiff, blobUrl) {
   let tableRows = issuesNotInDiff.map(issue =>
     `<tr>` +
     `<td>${levelIcon[issue.level]}</td>` +
-    `<td><a href="${blobUrl}/${issue.file}/#L${issue.line}">${issue.file}/#L${issue.line}</a></td>` +
+    `<td><a href="${blobUrl}/${issue.file}#L${issue.line}">${issue.file}#L${issue.line}</a></td>` +
     `<td>${issue.message}</td>` +
     `</tr>`
   ).join('');
