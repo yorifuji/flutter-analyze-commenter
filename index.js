@@ -117,7 +117,7 @@ module.exports = async function ({
   // Create inline comments and outline comment
   let inlineComments;
   let outlineComment;
-  const blobUrl = context.payload.pull_request.head.repo.html_url + '/blob/' + context.sha;
+  const blobUrl = context.payload.pull_request.head.repo.html_url + '/blob/' + context.payload.pull_request.head.sha;
   try {
     const { issuesInDiff, issuesNotInDiff } = filterIssuesByDiff(diff, issues);
     logVerbose(`Issues in Diff: ${JSON.stringify(issuesInDiff, null, 2)}`);
@@ -316,7 +316,8 @@ class Comment {
     this.body += issues.map(issue => {
       return `<tr><td>${levelIcon[issue.level]}</td><td>${issue.message}</td></tr>`;
     }).join('');
-    this.body += '</tbody></table>${issueCommentHeader}';
+    this.body += '</tbody></table>';
+    this.body += issueCommentHeader;
   }
 }
 
