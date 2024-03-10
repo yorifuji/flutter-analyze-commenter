@@ -168,8 +168,8 @@ module.exports = async function ({
     }
   }
 
-  // Retrieve existing comments
-  let remoteComments;
+  // Retrieve existing comments on pull request
+  let existingReviewComments;
   try {
     logVerbose('Retrieving remote comments.');
     const response = await github.rest.pulls.listReviewComments({
@@ -179,10 +179,10 @@ module.exports = async function ({
       per_page: perPage
     });
     // logVerbose(`listReviewComments result: ${JSON.stringify(response.data, null, 2)}`);
-    remoteComments = response.data.map(comment =>
+    existingReviewComments = response.data.map(comment =>
       new RemoteComment(comment.id, comment.path, comment.original_line || comment.line, comment.body)
     );
-    logVerbose(`Existed remote comments: ${JSON.stringify(remoteComments, null, 2)}`);
+    logVerbose(`Existed remote comments: ${JSON.stringify(existingReviewComments, null, 2)}`);
   } catch (error) {
     logError(`Failed to parse remote comments: ${error.message}`);
     return;
@@ -190,9 +190,9 @@ module.exports = async function ({
 
   // Logic to determine which comments to create, update, or delete
   const commentsToAdd = inlineComments.filter(local =>
-    !remoteComments.some(remote => remote.matchesLocalComment(local))
+    !existingReviewComments.some(remote => remote.matchesLocalComment(local))
   );
-  const commentsToDelete = remoteComments.filter(remote =>
+  const commentsToDelete = existingReviewComments.filter(comment => comment.hasFlutterAnalyzeCommentHeader()).filter(remote =>
     !inlineComments.some(local => remote.matchesLocalComment(local))
   );
 
@@ -322,6 +322,10 @@ class RemoteComment {
     this.path = path;
     this.line = line;
     this.body = body;
+  }
+
+  hasFlutterAnalyzeCommentHeader() {
+    return this.body.includes('Flutter Analyze Commenter:');
   }
 
   matchesLocalComment(localComment) {
