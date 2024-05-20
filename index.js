@@ -29,6 +29,8 @@ module.exports = async function ({
   logVerbose(`Working directory: ${workingDir}`);
 
   let issues;
+  let foundInlineIssues = false;
+  
   // parse flutter analyze log
   try {
     const analyzerOutput = fs.readFileSync(analyzeLog, 'utf-8');
@@ -37,7 +39,7 @@ module.exports = async function ({
     logVerbose(`Parsed issues: ${JSON.stringify(issues, null, 2)}`);
   } catch (error) {
     logError(`Failed to read analyze log: ${error.message}`);
-    return;
+    return 1;
   }
 
   // parse custom lint log
@@ -47,7 +49,7 @@ module.exports = async function ({
     issues = issues.concat(customLintIssues);
   } catch (error) {
     logError(`Failed to read custom lint log: ${error.message}`);
-    return;
+    return 1;
   }
 
   const maxIssuesCommentHeader = '<!-- Flutter Analyze Commenter: maxIssues -->';
@@ -69,7 +71,7 @@ module.exports = async function ({
     }
   } catch (error) {
     logError(`Failed to delete summary comment: ${error.message}`);
-    return;
+    return 1;
   }
 
   if (issues.length > maxIssues) {
@@ -83,11 +85,11 @@ module.exports = async function ({
         body: body
       });
       logVerbose(`Number of issues exceeds maximum: ${issues.length} > ${maxIssues}`);
-      return;
+      return 1;
     }
     catch (error) {
       logError(`Failed to create maxIssues comment: ${error.message}`);
-      return;
+      return 1;
     }
   }
 
@@ -108,7 +110,7 @@ module.exports = async function ({
     logVerbose(`Diff: ${JSON.stringify(diff, null, 2)}`);
   } catch (error) {
     logError(`Failed to retrieve diff: ${error.message}`);
-    return;
+    return 1;
   }
 
   // Create inline comments and outline comment
@@ -118,6 +120,7 @@ module.exports = async function ({
     const { issuesInDiff, issuesNotInDiff } = filterIssuesByDiff(diff, issues);
     logVerbose(`Issues in Diff: ${JSON.stringify(issuesInDiff, null, 2)}`);
     logVerbose(`Issues not in Diff: ${JSON.stringify(issuesNotInDiff, null, 2)}`);
+    foundInlineIssues = issuesInDiff.length > 0;
 
     const groupedIssues = groupIssuesByLine(issuesInDiff);
     inlineComments = groupedIssues.map(group => new Comment(group));
@@ -127,7 +130,7 @@ module.exports = async function ({
     logVerbose(`Outline comment: ${outlineComment}`);
   } catch (error) {
     logError(`Failed to create inline comments: ${error.message}`);
-    return;
+    return 1;
   }
 
   // Delete outline comment
@@ -150,7 +153,7 @@ module.exports = async function ({
     }
   } catch (error) {
     logError(`Failed to delete outline comment: ${error.message}`);
-    return;
+    return 1;
   }
 
   // Create outline comment
@@ -164,7 +167,7 @@ module.exports = async function ({
       });
     } catch (error) {
       logError(`Failed to create outline comment: ${error.message}`);
-      return;
+      return 1;
     }
   }
 
@@ -185,7 +188,7 @@ module.exports = async function ({
     logVerbose(`Existed remote comments: ${JSON.stringify(existingReviewComments, null, 2)}`);
   } catch (error) {
     logError(`Failed to parse remote comments: ${error.message}`);
-    return;
+    return 1;
   }
 
   // Logic to determine which comments to create, update, or delete
@@ -228,6 +231,7 @@ module.exports = async function ({
   }
 
   logVerbose('Processing completed.');
+  return foundInlineIssues ? 1 : 0;
 }
 
 /// class

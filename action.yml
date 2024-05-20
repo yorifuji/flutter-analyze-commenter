@@ -19,10 +19,6 @@ inputs:
     description: "Enable verbose logging"
     required: false
     default: false
-  analyze_log:
-    description: "Path to the Flutter analyze log file"
-    deprecationMessage: "Use `analyze-log` instead"
-    required: false
   max_issues:
     description: "Maximum number of issues to comment on"
     required: false
@@ -52,3 +48,4 @@ runs:
           const path = require('path');
           const script = require(path.join(actionPath, 'index.js'));
           await script({ core, github, context, workingDir, analyzeLog, customLintLog, verboseLogging })
+      - continue-on-error: true
