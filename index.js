@@ -47,9 +47,13 @@ module.exports = async function ({
 
   // parse custom lint log
   try {
-    let customLintIssues = new CustomLintParser(customLintLog, workingDir).parse();
-    logVerbose(`Parsed custom lint issues: ${JSON.stringify(customLintIssues, null, 2)}`);
-    issues = issues.concat(customLintIssues);
+    const customLintLogs = customLintLog.split(',').map(log => log.trim());
+    logVerbose(`Custom lint log files: ${JSON.stringify(customLintLogs)}`);
+    for (const log of customLintLogs) {
+      let customLintIssues = new CustomLintParser(log, workingDir).parse();
+      logVerbose(`Parsed custom lint issues for ${log}: ${JSON.stringify(customLintIssues, null, 2)}`);
+      issues = issues.concat(customLintIssues);
+    }
   } catch (error) {
     logError(`Failed to read custom lint log: ${error.message}`);
     return;
