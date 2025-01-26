@@ -51,8 +51,8 @@ jobs:
       - if: ${{ !cancelled() }}               # Required to run this step even if failure
         uses: yorifuji/flutter-analyze-commenter@v1
         with:
-          analyze-log: flutter_analyze.log    # file path for analyze log
-          custom-lint-log: custom_lint.log    # file path for custom lint log (optional)
+          analyze-log: flutter_analyze.log    # file path for analyze log, if multiple files, separated by commas
+          custom-lint-log: custom_lint.log    # file path for custom lint log (optional), if multiple files, separated by commas
           verbose: false                      # verbose output (optional)
 ```
 

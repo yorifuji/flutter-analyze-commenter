@@ -10,10 +10,10 @@ branding:
 
 inputs:
   analyze-log:
-    description: "Path to the log file by flutter analyze command"
+    description: "Path to the log file(s) by flutter analyze command, separated by commas"
     required: false
   custom-lint-log:
-    description: "(Optional)Path to the log file by dart run custom_lint command"
+    description: "(Optional) Paths to the log file(s) by dart run custom_lint command, separated by commas"
     required: false
   verbose:
     description: "Enable verbose logging"

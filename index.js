@@ -31,10 +31,15 @@ module.exports = async function ({
   let issues;
   // parse flutter analyze log
   try {
-    const analyzerOutput = fs.readFileSync(analyzeLog, 'utf-8');
-    logVerbose(`Analyzer output: ${analyzerOutput}`);
-    issues = parseAnalyzerOutputs(analyzerOutput, workingDir);
-    logVerbose(`Parsed issues: ${JSON.stringify(issues, null, 2)}`);
+    const analyzeLogs = analyzeLog.split(',').map(log => log.trim());
+    logVerbose(`Analyze log files: ${JSON.stringify(analyzeLogs)}`);
+    issues = [];
+    for (const log of analyzeLogs) {
+      const analyzerOutput = fs.readFileSync(log, 'utf-8');
+      const parsedIssues = parseAnalyzerOutputs(analyzerOutput, workingDir);
+      logVerbose(`Parsed issues for ${log}: ${JSON.stringify(parsedIssues, null, 2)}`);
+      issues = issues.concat(parsedIssues);
+    }
   } catch (error) {
     logError(`Failed to read analyze log: ${error.message}`);
     return;
@@ -42,9 +47,13 @@ module.exports = async function ({
 
   // parse custom lint log
   try {
-    let customLintIssues = new CustomLintParser(customLintLog, workingDir).parse();
-    logVerbose(`Parsed custom lint issues: ${JSON.stringify(customLintIssues, null, 2)}`);
-    issues = issues.concat(customLintIssues);
+    const customLintLogs = customLintLog.split(',').map(log => log.trim());
+    logVerbose(`Custom lint log files: ${JSON.stringify(customLintLogs)}`);
+    for (const log of customLintLogs) {
+      let customLintIssues = new CustomLintParser(log, workingDir).parse();
+      logVerbose(`Parsed custom lint issues for ${log}: ${JSON.stringify(customLintIssues, null, 2)}`);
+      issues = issues.concat(customLintIssues);
+    }
   } catch (error) {
     logError(`Failed to read custom lint log: ${error.message}`);
     return;
