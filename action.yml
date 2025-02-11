@@ -23,6 +23,10 @@ inputs:
     description: "Path to the Flutter analyze log file"
     deprecationMessage: "Use `analyze-log` instead"
     required: false
+  max-issues:
+    description: "Maximum number of issues to comment"
+    required: false
+    default: 10
 
 runs:
   using: composite
@@ -34,6 +38,7 @@ runs:
         ANALYZE_LOG_DEPRECATED: ${{ inputs.analyze_log }}
         CUSTOM_LINT_LOG: ${{ inputs.custom-lint-log }}
         VERBOSE: ${{ inputs.verbose }}
+        MAX_ISSUES: ${{ inputs.max-issues }}
       with:
         retries: 3
         script: |
@@ -43,7 +48,8 @@ runs:
 
           const workingDir = process.env.GITHUB_WORKSPACE;
           const actionPath = process.env.GITHUB_ACTION_PATH;
+          const maxIssues = parseInt(process.env.MAX_ISSUES);
 
           const path = require('path');
           const script = require(path.join(actionPath, 'index.js'));
-          await script({ core, github, context, workingDir, analyzeLog, customLintLog, verboseLogging })
+          await script({ core, github, context, workingDir, analyzeLog, customLintLog, verboseLogging, maxIssues })

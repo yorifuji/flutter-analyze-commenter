@@ -8,9 +8,9 @@ module.exports = async function ({
   analyzeLog,
   customLintLog,
   verboseLogging,
+  maxIssues
 }) {
 
-  const maxIssues = 10;
   const perPage = 100;
 
   function logVerbose(message) {
