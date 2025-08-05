@@ -27,7 +27,7 @@ jobs:
     steps:
       - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
 
-      - uses: yorifuji/next-latest-release@23010031330a9594fe1e6b80f08d37772a9bca6f # v1.0.1
+      - uses: yorifuji/next-latest-release@c5d1f40bd8800a595c2dd688947054b27fbe2ffd # v1.1.0
         id: next-release
         with:
           bump: ${{ inputs.bump }}
